@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import json
+import time # For exponential backoff
 
 # Show title and description.
 st.title("💬 チャットボット")
@@ -50,26 +51,41 @@ else:
             "contents": history
         }
 
-        try:
-            # Send the request to the Gemini API.
-            response = requests.post(API_URL, json=payload)
-            response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
+        # Implement exponential backoff for API requests
+        retries = 3
+        delay = 1
 
-            # Parse the JSON response.
-            response_json = response.json()
+        for i in range(retries):
+            try:
+                # Send the request to the Gemini API.
+                response = requests.post(API_URL, json=payload)
+                response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
 
-            # Extract the text from the API response.
-            # Handle potential errors if the response format is unexpected.
-            gemini_response = response_json.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', 'エラー: 応答がありませんでした。')
+                # Parse the JSON response.
+                response_json = response.json()
 
-            # Display the Gemini response.
-            with st.chat_message("assistant"):
-                st.markdown(gemini_response)
+                # Extract the text from the API response.
+                # Handle potential errors if the response format is unexpected.
+                gemini_response = response_json.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', 'エラー: 応答がありませんでした。')
 
-            # Store the Gemini response in session state.
-            st.session_state.messages.append({"role": "assistant", "content": gemini_response})
+                # Display the Gemini response.
+                with st.chat_message("assistant"):
+                    st.markdown(gemini_response)
 
-        except requests.exceptions.RequestException as e:
-            st.error(f"APIリクエスト中にエラーが発生しました: {e}")
-        except (IndexError, KeyError) as e:
-            st.error(f"API応答の解析中にエラーが発生しました: {e}")
+                # Store the Gemini response in session state.
+                st.session_state.messages.append({"role": "assistant", "content": gemini_response})
+
+                # If successful, break the loop
+                break
+
+            except requests.exceptions.RequestException as e:
+                st.error(f"APIリクエスト中にエラーが発生しました: {e}")
+                if i < retries - 1:
+                    st.info(f"リトライします... {delay}秒後")
+                    time.sleep(delay)
+                    delay *= 2
+                else:
+                    st.error("リトライの最大回数に達しました。")
+            except (IndexError, KeyError) as e:
+                st.error(f"API応答の解析中にエラーが発生しました: {e}")
+                break
