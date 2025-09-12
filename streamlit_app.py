@@ -24,7 +24,7 @@ if not st.session_state.chat_started:
     # Add a button to submit the goals
     if st.button("目標を送信"):
         # Create a single message with all three user inputs
-        user_prompt = f"私の学習目標です。\n\n① テーマ: {learning_theme}\n② 進捗: {goal_date_and_progress}\n③ 達成基準: {achievement_criteria}"
+        user_prompt = f"私の学習目標です。この情報に基づいて、考えを深めるための質問を1つだけ返してください。\n\n① テーマ: {learning_theme}\n② 進捗: {goal_date_and_progress}\n③ 達成基準: {achievement_criteria}"
 
         # Use st.secrets to access the API key stored in .streamlit/secrets.toml
         google_api_key = st.secrets.get("GOOGLE_API_KEY")
@@ -50,6 +50,7 @@ if not st.session_state.chat_started:
             * 学習者が話しやすい雰囲気で質問し、学習テーマや目標の具体化を支援してください。
             * 必要な情報が集まったら、学習目標を定め学習者に提案してください。イメージと異なる場合、追加で質問をして形を整えてください。
             * 学習者はすでに学習したい内容の教材やスケジュールは組んでいることを仮定します。スケジュール作成や学習内容の選定の支援は必要ありません。
+            * 返答には、必ず質問を1つだけ含めてください。追加で質問したいことがある場合でも、1つの返答に複数の質問を入れないでください。
             """
 
             # Create a session state variable to store the chat messages.
@@ -148,6 +149,7 @@ else:
         * 学習者が話しやすい雰囲気で質問し、学習テーマや目標の具体化を支援してください。
         * 必要な情報が集まったら、学習目標を定め学習者に提案してください。イメージと異なる場合、追加で質問をして形を整えてください。
         * 学習者はすでに学習したい内容の教材やスケジュールは組んでいることを仮定します。スケジュール作成や学習内容の選定の支援は必要ありません。
+        * 返答には、必ず質問を1つだけ含めてください。追加で質問したいことがある場合でも、1つの返答に複数の質問を入れないでください。
         """
 
         payload = {
