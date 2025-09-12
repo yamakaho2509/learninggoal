@@ -11,9 +11,9 @@ st.write(
 
 # --- New: Add input fields for user goals on the landing page ---
 st.header("あなたの学習目標を設定しましょう")
-learning_theme = st.text_input("① どんなテーマの学習に取り組んでいますか？", "例：簿記、英語、資格試験、業務スキルなど")
-goal_date_and_progress = st.text_input("② いつまでにどのくらいの進捗を目指していますか？", "例：1か月後にテキスト1冊終える、来月の試験に合格する など")
-achievement_criteria = st.text_input("③ 「達成できた！」と感じるために、どんな行動や成果物があればよいですか？", "例：練習問題を9割正答、英単語を毎日30語覚える")
+learning_theme = st.text_input("① どんなテーマの学習に取り組んでいますか？ (例：簿記、英語、資格試験、業務スキルなど)")
+goal_date_and_progress = st.text_input("② いつまでにどのくらいの進捗を目指していますか？ (例：1か月後にテキスト1冊終える、来月の試験に合格する など)")
+achievement_criteria = st.text_input("③ 「達成できた！」と感じるために、どんな行動や成果物があればよいですか？ (例：練習問題を9割正答、英単語を毎日30語覚える)")
 # --- End of new feature ---
 
 # Use st.secrets to access the API key stored in .streamlit/secrets.toml
