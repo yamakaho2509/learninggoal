@@ -9,7 +9,7 @@ st.write(
     "このチャットボットは、あなたの学習目標達成をサポートします。目標を具体的に設定して、学習の進捗を管理しましょう！"
 )
 
-# --- New: Add input fields for user goals on the landing page ---
+# --- Add input fields for user goals on the landing page ---
 st.header("あなたの学習目標を設定しましょう")
 learning_theme = st.text_input("① どんなテーマの学習に取り組んでいますか？ (例：簿記、英語、資格試験、業務スキルなど)")
 goal_date_and_progress = st.text_input("② いつまでにどのくらいの進捗を目指していますか？ (例：1か月後にテキスト1冊終える、来月の試験に合格する など)")
@@ -25,12 +25,8 @@ else:
     # Set up the Gemini API endpoint
     API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={google_api_key}"
 
-    # Add a system prompt text area for the chatbot's role
-    system_prompt = st.text_area(
-        "チャットボットに役割を与えてください (例: 親切な歴史の先生、専門のプログラミングアシスタント)",
-        value="あなたは、ユーザーの学習プランニングをサポートするAIアシスタントです。ユーザーが設定した目標に基づき、具体的な学習計画やモチベーション維持のためのアドバイスを提供してください。",
-        height=100
-    )
+    # Set a fixed system prompt for the chatbot's role
+    system_prompt = "あなたは、ユーザーの学習プランニングをサポートするAIアシスタントです。ユーザーが設定した目標に基づき、具体的な学習計画やモチベーション維持のためのアドバイスを提供してください。"
 
     # Create a session state variable to store the chat messages.
     if "messages" not in st.session_state:
