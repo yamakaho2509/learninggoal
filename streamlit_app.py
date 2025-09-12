@@ -1,17 +1,22 @@
 import streamlit as st
 import requests
 import json
-import time # For exponential backoff
+import time
 
 # Show title and description.
-st.title("💬 チャットボット")
+st.title("💬 学習プランニングチャットボット")
 st.write(
-    "このチャットボットは、GoogleのGemini APIを使用して応答を生成します。"
-    "Google APIキーが必要です。"
+    "このチャットボットは、あなたの学習目標達成をサポートします。目標を具体的に設定して、学習の進捗を管理しましょう！"
 )
 
+# --- New: Add input fields for user goals on the landing page ---
+st.header("あなたの学習目標を設定しましょう")
+learning_theme = st.text_input("① どんなテーマの学習に取り組んでいますか？", "例：簿記、英語、資格試験、業務スキルなど")
+goal_date_and_progress = st.text_input("② いつまでにどのくらいの進捗を目指していますか？", "例：1か月後にテキスト1冊終える、来月の試験に合格する など")
+achievement_criteria = st.text_input("③ 「達成できた！」と感じるために、どんな行動や成果物があればよいですか？", "例：練習問題を9割正答、英単語を毎日30語覚える")
+# --- End of new feature ---
+
 # Use st.secrets to access the API key stored in .streamlit/secrets.toml
-# See https://docs.streamlit.io/develop/concepts/connections/secrets-management
 google_api_key = st.secrets.get("GOOGLE_API_KEY")
 
 if not google_api_key:
@@ -20,14 +25,19 @@ else:
     # Set up the Gemini API endpoint
     API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={google_api_key}"
 
+    # Add a system prompt text area for the chatbot's role
+    system_prompt = st.text_area(
+        "チャットボットに役割を与えてください (例: 親切な歴史の先生、専門のプログラミングアシスタント)",
+        value="あなたは、ユーザーの学習プランニングをサポートするAIアシスタントです。ユーザーが設定した目標に基づき、具体的な学習計画やモチベーション維持のためのアドバイスを提供してください。",
+        height=100
+    )
+
     # Create a session state variable to store the chat messages.
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
     # Display the existing chat messages.
     for message in st.session_state.messages:
-        # Use 'assistant' for the display role for consistency with OpenAI's original code
-        # while mapping to 'model' for the API call.
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
@@ -40,15 +50,17 @@ else:
             st.markdown(prompt)
 
         # Prepare the chat history for the Gemini API.
-        # The Gemini API uses 'user' and 'model' roles.
-        # We need to map 'assistant' role from the session state to 'model' for the API payload.
         history = []
         for msg in st.session_state.messages:
             role = "user" if msg["role"] == "user" else "model"
             history.append({"role": role, "parts": [{"text": msg["content"]}]})
 
+        # Include the system prompt in the API payload
         payload = {
-            "contents": history
+            "contents": history,
+            "systemInstruction": {
+                "parts": [{"text": system_prompt}]
+            }
         }
 
         # Implement exponential backoff for API requests
@@ -59,13 +71,10 @@ else:
             try:
                 # Send the request to the Gemini API.
                 response = requests.post(API_URL, json=payload)
-                response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
+                response.raise_for_status()
 
                 # Parse the JSON response.
                 response_json = response.json()
-
-                # Extract the text from the API response.
-                # Handle potential errors if the response format is unexpected.
                 gemini_response = response_json.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', 'エラー: 応答がありませんでした。')
 
                 # Display the Gemini response.
