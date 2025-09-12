@@ -98,8 +98,6 @@ if not st.session_state.chat_started:
                     
                     # Set chat_started to True to trigger the chat UI
                     st.session_state.chat_started = True
-                    # Rerun the app to show the chat UI
-                    st.experimental_rerun()
                     
                     # If successful, break the loop
                     break
